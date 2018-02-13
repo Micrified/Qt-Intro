@@ -1,6 +1,6 @@
 #include "mainview.h"
 #include "math.h"
-
+#include "vertex.h"
 #include <QDateTime>
 
 MainView::MainView(QWidget *parent) : QOpenGLWidget(parent) {
@@ -38,7 +38,52 @@ void MainView::initializeGL() {
 
 void MainView::setupPostGL() {
 
-    // Our actions here!
+    //******************************************************************************
+    //                           OpenGL calls placed here
+    //******************************************************************************
+
+    // 1. Initializing the QOpenGLShaderProgram class.
+    this->shaderProgram = new QOpenGLShaderProgram();
+
+    // 2. Add the vertex shader, and then the fragment shader.
+    this->shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":shaders/vertshader.glsl");
+    this->shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":shaders/fragshader.glsl");
+
+    // 3. Compile the shader with link.
+    this->shaderProgram->link();
+
+    // 4. Activate the shader with bind.
+    this->shaderProgram->bind();
+
+    // 5. Initialize the triangle.
+    vertex triangle[3];
+    triangle[0] = newVertex(-1,-1,1,0,0);
+    triangle[1] = newVertex(1,-1,0,1,0);
+    triangle[2] = newVertex(0,1,0,0,1);
+
+    // 6. Create VBO: Buffer object names.
+    glGenBuffers(3, &(this->vbo));
+
+    // 7. Create VAO: Vertex array.
+    glGenVertexArrays(3, &(this->vao));
+
+    // 8. Bind the vertex array.
+    glBindVertexArray(this->vao);
+
+    // 9. Bind the buffer.
+    glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+
+    // 10. Upload the vertex data.
+    glBufferData(GL_ARRAY_BUFFER, (3 * sizeof(vertex)), triangle, GL_STATIC_DRAW);
+
+    // 11. Enable Vertex Attribute array (0, and 1).
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // 12. Call .
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)(2 * sizeof(GLfloat)));
+
 }
 
 void MainView::resizeGL(int newWidth, int newHeight) {
@@ -48,6 +93,18 @@ void MainView::resizeGL(int newWidth, int newHeight) {
 }
 
 void MainView::paintGL() {
+
+    //******************************************************************************
+    //                          Rendering Calls placed here
+    //******************************************************************************
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glBindVertexArray(this->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
 }
 

@@ -36,8 +36,15 @@ protected:
 
 private:
     QOpenGLDebugLogger *debugLogger;
-
+    QOpenGLShaderProgram *shaderProgram;
     QTimer timer; // timer used for animation
+
+    // The VBO buffer referenced in glGenBuffers.
+    GLuint vbo;
+
+    // The VAO.
+    GLuint vao;
+
 
 private slots:
     void onMessageLogged( QOpenGLDebugMessage Message );
